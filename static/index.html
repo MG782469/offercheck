@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OfferCheck</title>
+  <meta name="description" content="Paste an internship offer. OfferCheck investigates the company live with SerpApi and shows the evidence.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="logo">🕵️</span> OfferCheck</div>
+    <span class="tag">Powered by live search from SerpApi</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Is that internship offer <em>real</em>?</h1>
+      <p>Paste the email or WhatsApp message. OfferCheck investigates the company across Google Search, Maps, News, Jobs and company registries, then shows you the evidence.</p>
+    </section>
+
+    <section class="card input-card">
+      <label for="text">Offer message</label>
+      <textarea id="text" rows="8" placeholder="Paste the offer letter, email or WhatsApp message here…"></textarea>
+      <div class="row">
+        <div class="field">
+          <label for="company">Company <span class="hint">(auto-detected, edit if wrong)</span></label>
+          <input id="company" placeholder="e.g. Razorpay">
+        </div>
+        <div class="field">
+          <label for="email">Recruiter email <span class="hint">(auto-detected)</span></label>
+          <input id="email" placeholder="e.g. hr@company.com">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="go" class="primary">Investigate</button>
+        <button class="ghost" data-sample="scam">Try a scam message</button>
+        <button class="ghost" data-sample="real">Try a real offer</button>
+      </div>
+    </section>
+
+    <section id="results" class="results hidden">
+      <div class="card verdict" id="verdict">
+        <div class="gauge">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="52"></circle>
+            <circle class="bar" id="gauge-bar" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="gauge-num"><span id="score">–</span><small>risk</small></div>
+        </div>
+        <div class="verdict-text">
+          <div class="who" id="who">Investigating…</div>
+          <h2 id="headline">Gathering evidence</h2>
+          <ul class="reasons" id="reasons"></ul>
+          <ul class="advice" id="advice"></ul>
+        </div>
+      </div>
+      <div id="steps" class="steps"></div>
+    </section>
+  </main>
+
+  <footer>
+    OfferCheck shows risk signals from public web data. It is not a legal verdict.
+    Report job fraud at <a href="https://cybercrime.gov.in" target="_blank" rel="noopener">cybercrime.gov.in</a> or call 1930.
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
