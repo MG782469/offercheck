@@ -20,8 +20,11 @@ Existing "fake job detectors" only guess from the message text. **OfferCheck goe
 
 1. Reads the message and pulls out the **company name** and **recruiter email**.
 2. Flags scam wording in the message: asking for money, Aadhaar/bank details, "no interview", urgency, WhatsApp-only contact, unrealistic per-day pay.
-3. Runs **8 live checks** in parallel, streaming each result to the screen as it finishes.
+3. Runs **9 live checks** in parallel, streaming each result to the screen as it finishes.
 4. Combines everything into a **0–100 risk score** with the reasons, evidence links and what to do next.
+5. Catches **impersonation**: when a real company's name (say, Infosys) is used from a Gmail address with a fee request, it raises an impersonation alert instead of trusting the famous name.
+6. Understands **Hinglish** WhatsApp scams ("fees jama karo", "aaj hi").
+7. One click turns the result into a **WhatsApp warning** you can forward to your college group.
 
 | Check | Data source (SerpApi engine) | What it tells you |
 |---|---|---|
@@ -33,12 +36,13 @@ Existing "fake job detectors" only guess from the message text. **OfferCheck goe
 | LinkedIn presence | `google` (`site:linkedin.com/company`) | Does it have a LinkedIn company page? |
 | Company registration | `google` (MCA registry mirrors: Zauba, Tofler) | Is it a registered Indian company (CIN record)? |
 | Recruiter email | DNS (Google DoH) + the website found above | Free Gmail "HR"? Domain that can't receive mail? Domain that doesn't match the company? |
+| Recruiter's email / phone history | `google` (exact email or phone number) | Has this exact contact already been reported in scam posts? |
 
 **Without live search data the app cannot work.** Every web signal comes from a SerpApi engine.
 
 ### Scoring
 
-The score starts at 25. Each check adds risk (red / amber) or removes it (green). Message red flags add up to 45 points. **Any request for money puts the score at 70 or above**, because genuine companies never charge interns. 65 and above means "High risk", 35 to 64 means "Be careful", and below 35 means "Looks legitimate". Every point is shown with its evidence, so the user can judge for themselves.
+The score starts at 25. Each check adds risk (red / amber) or removes it (green). Message red flags add up to 45 points. **Any request for money puts the score at 70 or above**, because genuine companies never charge interns. An impersonation alert puts it at 80 or above. 65 and above means "High risk", 35 to 64 means "Be careful", and below 35 means "Looks legitimate". Every point is shown with its evidence, so the user can judge for themselves.
 
 ## Run it locally
 

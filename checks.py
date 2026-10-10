@@ -31,6 +31,7 @@ class CheckResult:
     summary: str = ""
     evidence: list = field(default_factory=list)
     cached: bool = False
+    results: int = 0  # how many search results this check read
     data: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -82,6 +83,8 @@ def _run(result: CheckResult, params: dict) -> dict | None:
         result.signal, result.summary = "error", str(exc)
         return None
     result.cached = cached
+    for key in ("organic_results", "local_results", "news_results", "jobs_results"):
+        result.results += len(data.get(key) or [])
     return data
 
 
@@ -253,6 +256,39 @@ def check_registry(company: str) -> CheckResult:
     return r
 
 
+def check_contact(email: str | None, phones: list[str]) -> CheckResult:
+    """Has this exact email address or phone number shown up in scam reports?"""
+    r = CheckResult("contact", "Recruiter's email / phone history", "Google Search")
+    targets = ([email] if email else []) + [f"+91 {p[:5]} {p[5:]}" if len(p) == 10 else p for p in phones[:1]]
+    targets = [t for t in targets if "X" not in t.upper().replace("+91", "")]  # skip masked numbers
+    if not targets:
+        r.summary = "No email or phone number to look up"
+        return r
+    hits, seen = [], 0
+    for t in targets:
+        bare = t.replace("+91 ", "").replace(" ", "")
+        data = _run(r, {"engine": "google", "q": f'"{bare}"', "gl": "in", "hl": "en"})
+        if data is None:
+            return r
+        for res in data.get("organic_results", []):
+            blob = f"{res.get('title', '')} {res.get('snippet', '')}"
+            if bare.lower() not in blob.lower().replace(" ", ""):
+                continue
+            seen += 1
+            if SCAM_WORDS.search(blob):
+                hits.append(_ev(res.get("title", ""), res.get("link", ""), res.get("snippet", ""), _domain(res.get("link", ""))))
+    r.evidence = hits[:3]
+    shown = " / ".join(targets)
+    if hits:
+        r.signal, r.delta = "red", 20
+        r.summary = f"{shown} already appears in {len(hits)} scam report(s)"
+    elif seen:
+        r.signal, r.summary = "neutral", f"{shown} appears online, but not in scam reports"
+    else:
+        r.signal, r.summary = "neutral", f"No public reports about {shown}"
+    return r
+
+
 def _has_mx(domain: str) -> bool | None:
     try:
         resp = requests.get("https://dns.google/resolve", params={"name": domain, "type": "MX"}, timeout=10)
@@ -299,4 +335,5 @@ STEP_TITLES = [
     ("linkedin", "LinkedIn presence", "Google Search"),
     ("registry", "Company registration (MCA)", "Google Search"),
     ("email", "Recruiter email", "DNS + website match"),
+    ("contact", "Recruiter's email / phone history", "Google Search"),
 ]

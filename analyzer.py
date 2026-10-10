@@ -36,6 +36,7 @@ class Flag:
 class Extracted:
     company: str | None
     emails: list[str] = field(default_factory=list)
+    phones: list[str] = field(default_factory=list)
 
     @property
     def email(self) -> str | None:
@@ -67,7 +68,14 @@ _RULES = [
      r"(₹|rs\.?|inr)\s?\d[\d,]*\s*(/-)?\s*(per|/|a)\s*(day|hour|hr)\b"),
     ("generic_greeting", "Generic greeting instead of your name", 4,
      r"\bdear\s+(candidate|applicant|student|aspirant|sir\s*/\s*madam)\b"),
+    # Hinglish versions of the same tricks, as they show up on WhatsApp.
+    ("asks_payment_hinglish", "Asks you to pay money (Hinglish)", 35,
+     r"(fee|fees|paise|paisa|amount|charges?)\s+(jama|bhejo|bhejna|bhej\s+do|pay\s+karo|deni\s+hogi|dena\s+hoga|lagegi|lagega)"
+     r"|(jama|bhejo)\s+(karo|kare|karein)\s+.{0,20}(₹|rs)"),
+    ("urgency_hinglish", "Pressure to act immediately (Hinglish)", 8,
+     r"(jaldi\s+(karo|kare|karein)|aaj\s+hi|abhi\s+(pay|bhejo|karo)|seats?\s+limited\s+hai)"),
 ]
+_PHONE = re.compile(r"(?:\+91[\s\-]?)?[6-9]\d{4}[\s\-]?\d{5}\b")
 _COMPILED = [(i, label, w, re.compile(p, re.IGNORECASE)) for i, label, w, p in _RULES]
 
 
@@ -93,7 +101,12 @@ def extract(text: str, company: str | None = None, email: str | None = None) -> 
         domain = emails[0].split("@", 1)[1].lower()
         if domain not in FREE_MAIL_DOMAINS:
             name = domain.split(".")[0].capitalize()
-    return Extracted(company=name or None, emails=emails)
+    phones = []
+    for p in _PHONE.findall(text):
+        digits = re.sub(r"\D", "", p)[-10:]
+        if digits not in phones:
+            phones.append(digits)
+    return Extracted(company=name or None, emails=emails, phones=phones)
 
 
 def text_flags(text: str) -> list[Flag]:

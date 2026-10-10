@@ -54,3 +54,18 @@ def test_payment_request_forces_high_risk():
     flags = analyzer.text_flags(SCAM)
     goods = [checks.CheckResult(str(i), "x", "y", signal="green", delta=-10) for i in range(8)]
     assert investigate.verdict(goods, flags)["score"] >= investigate.PAYMENT_FLOOR
+
+
+def test_hinglish_payment_is_flagged():
+    assert "asks_payment_hinglish" in ids("Selection ho gaya hai, 1500 rs fees jama karo aaj hi")
+
+
+def test_phone_extraction():
+    assert analyzer.extract("Call HR at +91 98765 43210 now").phones == ["9876543210"]
+
+
+def test_impersonation_detected():
+    site = checks.CheckResult("website", "w", "g", signal="green", delta=-10, data={"official_domain": "infosys.com"})
+    mail = checks.CheckResult("email", "e", "d", signal="red", delta=15)
+    v = investigate.verdict([site, mail], analyzer.text_flags("pay the security deposit of Rs 3,500"), "Infosys")
+    assert v["impersonation"] and v["score"] >= 80

@@ -68,6 +68,12 @@ button { font: inherit; border-radius: 10px; padding: 10px 16px; cursor: pointer
 .ev .src { color: var(--muted); font-size: 12px; }
 .ev .snip { color: var(--muted); display: block; margin-top: 2px; }
 .cached { font-size: 11px; color: var(--muted); margin-left: 6px; }
+.banner { background: color-mix(in srgb, var(--red) 16%, var(--panel)); border: 1px solid var(--red); color: var(--text); border-radius: var(--radius); padding: 14px 16px; font-weight: 700; display: flex; gap: 10px; align-items: center; animation: fade .35s ease; }
+.banner::before { content: "🎭"; font-size: 22px; }
+.share { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.whatsapp { background: #25d366; color: #06301a; border-color: transparent; font-weight: 700; }
+.copied { color: var(--green); font-size: 13px; }
+.stats { margin-top: 10px; color: var(--muted); font-size: 12px; }
 footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 16px 40px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

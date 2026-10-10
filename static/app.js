@@ -82,7 +82,45 @@ function showVerdict(v) {
     v.red.map((t) => `<li class="bad">${esc(t)}</li>`).join("") +
     v.green.map((t) => `<li class="good">${esc(t)}</li>`).join("");
   $("#advice").innerHTML = v.advice.map((t) => `<li>${esc(t)}</li>`).join("");
+
+  if (v.impersonation) {
+    $("#banner").textContent = v.impersonation;
+    $("#banner").classList.remove("hidden");
+  }
+  const s = v.stats || {};
+  $("#stats").textContent = `${s.sources} sources checked · ${s.results} search results analysed · ${s.seconds}s`;
+
+  lastVerdict = v;
+  $("#share").classList.toggle("hidden", v.level === "low");
 }
+
+let lastVerdict = null;
+
+function warningText(v) {
+  const name = v.company || "this company";
+  const lines = [
+    `⚠️ Internship scam alert: "${name}"`,
+    v.impersonation ? `Someone is pretending to be ${name}. ${v.impersonation.split(": ")[1] || ""}` : `OfferCheck risk score: ${v.score}/100 (${v.headline}).`,
+    ...v.red.slice(0, 3).map((r) => `• ${r}`),
+    "",
+    "Never pay any fee for an internship and don't share Aadhaar/PAN/bank details.",
+    "Report fraud: cybercrime.gov.in or call 1930.",
+  ];
+  return lines.join("\n");
+}
+
+$("#share-btn").addEventListener("click", async () => {
+  if (!lastVerdict) return;
+  const text = warningText(lastVerdict);
+  try {
+    await navigator.clipboard.writeText(text);
+    $("#copied").classList.remove("hidden");
+    setTimeout(() => $("#copied").classList.add("hidden"), 2500);
+  } catch {
+    /* clipboard can be blocked; WhatsApp link below still works */
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+});
 
 function reset() {
   $("#results").classList.remove("hidden");
@@ -95,6 +133,10 @@ function reset() {
   $("#reasons").innerHTML = "";
   $("#advice").innerHTML = "";
   $("#steps").innerHTML = "";
+  $("#stats").textContent = "";
+  $("#banner").classList.add("hidden");
+  $("#share").classList.add("hidden");
+  lastVerdict = null;
 }
 
 function handle(ev) {
