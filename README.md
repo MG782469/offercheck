@@ -95,7 +95,3 @@ tests/          unit tests
 ## Report fraud
 
 India: [cybercrime.gov.in](https://cybercrime.gov.in) or call **1930**.
-
-## AI disclosure
-
-Built with help from Claude (Anthropic), which helped shape the idea and write and review the code. I tested it and recorded the demo.
